@@ -1,0 +1,330 @@
+{{ 'section-contact-form.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+{%- endstyle -%}
+
+<div class="color-{{ section.settings.color_scheme }} gradient">
+  <div class="contact page-width page-width--narrow section-{{ section.id }}-padding">
+    {%- if section.settings.heading != blank -%}
+      <h2 class="title title-wrapper--no-top-margin inline-richtext {{ section.settings.heading_size }}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
+        {{ section.settings.heading }}
+      </h2>
+    {%- else -%}
+      <h2 class="visually-hidden">{{ 'templates.contact.form.title' | t }}</h2>
+    {%- endif -%}
+    {%- liquid
+      assign contact_form_class = 'isolate'
+      if settings.animations_reveal_on_scroll
+        assign contact_form_class = 'isolate scroll-trigger animate--slide-in'
+      endif
+    -%}
+    {%- form 'contact', id: 'ContactForm', class: contact_form_class -%}
+      {%- if form.posted_successfully? -%}
+        <h2 class="form-status form-status-list form__message" tabindex="-1" autofocus>
+          {% render 'icon-success' %}
+          {{ 'templates.contact.form.post_success' | t }}
+        </h2>
+      {%- elsif form.errors -%}
+        <div class="form__message">
+          <h2 class="form-status caption-large text-body" role="alert" tabindex="-1" autofocus>
+            {% render 'icon-error' %}
+            {{ 'templates.contact.form.error_heading' | t }}
+          </h2>
+        </div>
+        <ul class="form-status-list caption-large" role="list">
+          <li>
+            <a href="#ContactForm-email" class="link">
+              {{ form.errors.translated_fields.email | capitalize }}
+              {{ form.errors.messages.email }}
+            </a>
+          </li>
+        </ul>
+      {%- endif -%}
+      <div class="contact__fields">
+        <div class="field">
+          <input
+            class="field__input"
+            autocomplete="name"
+            type="text"
+            id="ContactForm-name"
+            name="contact[{{ 'templates.contact.form.name' | t }}]"
+            value="{% if form.name %}{{ form.name }}{% elsif customer %}{{ customer.name }}{% endif %}"
+            placeholder="{{ 'templates.contact.form.name' | t }}"
+            class="input-field"
+          >
+          <label class="field__label" for="ContactForm-name">{{ 'templates.contact.form.name' | t }}</label>
+        </div>
+        <div class="field field--with-error">
+          <input
+            autocomplete="email"
+            type="email"
+            id="ContactForm-email"
+            class="field__input"
+            name="contact[email]"
+            spellcheck="false"
+            autocapitalize="off"
+            value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}"
+            aria-required="true"
+            {% if form.errors contains 'email' %}
+              aria-invalid="true"
+              aria-describedby="ContactForm-email-error"
+            {% endif %}
+            placeholder="{{ 'templates.contact.form.email' | t }}"
+          >
+          <label class="field__label" for="ContactForm-email">
+            {{- 'templates.contact.form.email' | t }}
+            <span aria-hidden="true">*</span></label
+          >
+          {%- if form.errors contains 'email' -%}
+            <small class="contact__field-error" id="ContactForm-email-error">
+              <span class="visually-hidden">{{ 'accessibility.error' | t }}</span>
+              <span class="form__message">
+                {%- render 'icon-error' -%}
+                {{- form.errors.translated_fields.email | capitalize }}
+                {{ form.errors.messages.email -}}
+              </span>
+            </small>
+          {%- endif -%}
+        </div>
+      </div>
+
+      <div class="field">
+        <input
+          type="tel"
+          id="ContactForm-phone"
+          class="field__input"
+          autocomplete="tel"
+          name="contact[{{ 'templates.contact.form.phone' | t }}]"
+          pattern="[0-9\-]*"
+          value="{% if form.phone %}{{ form.phone }}{% elsif customer %}{{ customer.phone }}{% endif %}"
+          placeholder="{{ 'templates.contact.form.phone' | t }}"
+          style="font-size:12px;"
+        >
+        <label class="field__label" for="ContactForm-phone">{{ 'templates.contact.form.phone' | t }}</label>
+      </div>
+      <div class="field" style="font-size:12px;">
+        <input
+          type="text"
+          id="ContactForm-shipping-address"
+          class="field__input"
+          name="contact[shipping_address]"
+          autocomplete="street-address"
+          placeholder="Shipping Address"
+          style="font-size:12px;"
+        >
+        <label class="field__label" for="ContactForm-shipping-address"> Shipping Address </label>
+      </div>
+      <div class="field">
+        <input
+          type="date"
+          id="ContactForm-delivery-date"
+          class="field__input"
+          name="contact[delivery_date]"
+          placeholder="Delivery Date Needed By"
+          style="font-size:14px;"
+        >
+        <label class="field__label" for="ContactForm-delivery-date"> Delivery Date Needed By </label>
+      </div>
+      <!-- Word and/or Number to be Used -->
+      <div class="field" style="font-size:12px;">
+        <input
+          type="text"
+          id="ContactForm-custom-text-number"
+          class="field__input"
+          name="contact[custom_text_number]"
+          placeholder="Enter word and/or number"
+          style="font-size:14px;"
+        >
+        <label class="field__label" for="ContactForm-custom-text-number"> Word and/or Number to be Used </label>
+      </div>
+
+      <!-- Font Size -->
+      <div class="field">
+        <select
+          id="ContactForm-font-size"
+          class="field__input"
+          name="contact[font_size]"
+          style="font-size:14px;box-sizing:content-box;height:fit-content;"
+        >
+          <option value="big">Big</option>
+          <option value="small">Small</option>
+        </select>
+        <label class="field__label" for="ContactForm-font-size"> Font Size </label>
+      </div>
+
+      <!-- Font Style -->
+      <div class="field">
+        <select
+          id="ContactForm-font-style"
+          class="field__input"
+          name="contact[font_style]"
+          style="font-size:14px;box-sizing:content-box;height:fit-content;"
+        >
+          <option value="straight">Straight</option>
+          <option value="cursive">Cursive</option>
+        </select>
+        <label class="field__label" for="ContactForm-font-style"> Font Style (Straight or Cursive) </label>
+      </div>
+
+      <!-- Text Placement -->
+      <div class="field">
+        <select
+          id="ContactForm-text-placement"
+          class="field__input"
+          name="contact[text_placement]"
+          style="font-size:14px;box-sizing:content-box;height:fit-content;"
+        >
+          <option value="front">Front</option>
+          <option value="back">Back</option>
+        </select>
+        <label class="field__label" for="ContactForm-text-placement"> Custom Text Placement (Front or Back) </label>
+      </div>
+      <div class="field">
+        <label for="adult-size" style="padding-left:1.3em;padding-right:1em;box-sizing:content-box"
+          >Adult Size and Quantity:</label
+        >
+        <textarea id="adult-size" name="contact[adult-size]" placeholder="e.g., XS: 2, S: 3, M: 1"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="kids-size" style="padding-left:1.3em;padding-right:1em;box-sizing:content-box"
+          >Kids Size and Quantity:</label
+        >
+        <textarea id="kids-size" name="contact[kids-size]" placeholder="e.g., 2T: 1, S (6-8): 2"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="total-quantity" style="padding-left:1.3em;padding-right:1em;box-sizing:content-box"
+          >Total Quantity:</label
+        >
+        <input type="number" id="total-quantity" name="contact[total-quantity]" placeholder="e.g., 10">
+      </div>
+
+      <div class="field">
+        <label for="colors" style="padding-left:1.3em;padding-right:1em;box-sizing:content-box">Colors:</label>
+        <textarea id="colors" name="contact[colors]" placeholder="e.g., Red, Blue, Green"></textarea>
+      </div>
+
+      <div class="field">
+        <textarea
+          rows="10"
+          id="ContactForm-body"
+          class="text-area field__input"
+          name="contact[{{ 'templates.contact.form.comment' | t }}]"
+          placeholder="{{ 'templates.contact.form.comment' | t }}"
+        >
+          {{- form.body -}}
+        </textarea>
+        <label class="form__label field__label" for="ContactForm-body">
+          {{- 'templates.contact.form.comment' | t -}}
+        </label>
+      </div>
+      <div class="contact__button">
+        <button type="submit" class="button">
+          {{ 'templates.contact.form.send' | t }}
+        </button>
+      </div>
+      <!-- Custom Image or Logo -->
+      <div>
+        <p>
+          Custom Image or Logo: Email directly to us at
+          <a href="mailto:orders@bakonerystudio.com">orders@bakonerystudio.com</a>
+          with placement details. Please send logos or custom images in PNG, JPEG, or PDF formats.
+        </p>
+      </div>
+    {%- endform -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:sections.contact-form.name",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "default": "t:sections.contact-form.settings.title.default",
+      "label": "t:sections.contact-form.settings.title.label"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {
+          "value": "h2",
+          "label": "t:sections.all.heading_size.options__1.label"
+        },
+        {
+          "value": "h1",
+          "label": "t:sections.all.heading_size.options__2.label"
+        },
+        {
+          "value": "h0",
+          "label": "t:sections.all.heading_size.options__3.label"
+        },
+        {
+          "value": "hxl",
+          "label": "t:sections.all.heading_size.options__4.label"
+        },
+        {
+          "value": "hxxl",
+          "label": "t:sections.all.heading_size.options__5.label"
+        }
+      ],
+      "default": "h1",
+      "label": "t:sections.all.heading_size.label"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:sections.all.colors.label",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.all.padding.section_padding_heading"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_top",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "t:sections.all.padding.padding_bottom",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.contact-form.presets.name"
+    }
+  ]
+}
+{% endschema %}

@@ -124,16 +124,41 @@ if (!customElements.get('product-form')) {
         }
       }
 
+      //new togglebutton femi put to include preorder
+  toggleSubmitButton(disable = true, text) {
+  const selectedVariantId = this.variantIdInput.value;
+  const currentVariant = window.productVariants[selectedVariantId];
+
+  if (disable) {
+    this.submitButton.setAttribute('disabled', 'disabled');
+    if (text) this.submitButtonText.textContent = text;
+  } else {
+    this.submitButton.removeAttribute('disabled');
+
+    if (currentVariant) {
+      if (currentVariant.inventory_quantity > 0) {
+        this.submitButtonText.textContent = window.variantStrings.addToCart;
+      } else if (currentVariant.inventory_quantity <= 0 && currentVariant.inventory_policy === "continue") {
+        this.submitButtonText.textContent = "PRE-ORDER";
+      } else {
+        this.submitButtonText.textContent = "Out of Stock";
+      }
+    }
+  }
+}
+
+
+      /*   
       toggleSubmitButton(disable = true, text) {
         if (disable) {
-          this.submitButton.setAttribute('disabled', 'disabled');
+          this.submitButton.setAttribute("disabled", "disabled");
           if (text) this.submitButtonText.textContent = text;
-        } else {
-          this.submitButton.removeAttribute('disabled');
+        } else {n-product.liquid includes this at the bottom:
+          this.submitButton.removeAttribute("disabled");
           this.submitButtonText.textContent = window.variantStrings.addToCart;
         }
       }
-
+*/
       get variantIdInput() {
         return this.form.querySelector('[name=id]');
       }
